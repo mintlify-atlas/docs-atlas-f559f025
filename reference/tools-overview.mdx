@@ -1,0 +1,66 @@
+---
+title: "KillerPDF editing tools: Select, Text, Draw, and more"
+description: "Reference for all five editing tools in KillerPDF — Select, Text, Highlight, Draw, and Signature — with cursor styles, behaviors, and when to use each."
+---
+
+KillerPDF has five editing tools. Each tool changes what happens when you click or drag on the page canvas. The active tool is highlighted in the toolbar and sets the cursor so you always know what mode you are in.
+
+<CardGroup cols={2}>
+  <Card title="Select" icon="arrow-pointer">
+    **Cursor:** Arrow
+
+    The default tool. Click an annotation to select it — a green border appears around the selected item. Press `Delete` to remove it or `Ctrl+Z` to undo the most recent annotation.
+
+    **Drag** on the page to draw a selection rectangle and extract the text inside it to the clipboard.
+
+    **Double-click** any line of existing PDF text to open an inline editor over that line. The editor pre-fills with the original text and attempts to match the font. Press `Enter` to commit or `Escape` to cancel.
+  </Card>
+  <Card title="Text" icon="i-cursor">
+    **Cursor:** I-beam
+
+    Click anywhere on the page to place a floating text box at that position. Type your text, then press `Enter` to commit it as an annotation. Press `Shift+Enter` to insert a new line inside the box. Press `Escape` to discard the box without saving.
+
+    Committed text boxes are saved as text annotations and written into the PDF when you save or print.
+  </Card>
+  <Card title="Highlight" icon="highlighter">
+    **Cursor:** Crosshair
+
+    Drag to draw a filled rectangle over the area you want to highlight. Release the mouse to commit the highlight. A draw settings bar appears at the top of the page area when this tool is active, giving you access to color swatches and an opacity slider.
+
+    The default highlight color is semi-transparent yellow. Highlights smaller than 3×3 pixels are discarded automatically.
+  </Card>
+  <Card title="Draw" icon="pencil">
+    **Cursor:** Pen
+
+    Hold the mouse button and drag to draw a freehand polyline. Release to commit the stroke as an ink annotation. The draw settings bar appears with color swatches, a size slider (1–20 px), and an opacity slider.
+
+    Strokes with fewer than three points are discarded automatically.
+  </Card>
+  <Card title="Signature" icon="signature">
+    **Cursor:** Hand
+
+    Clicking the Signature button opens a popup listing your saved signatures. Select a signature from the list to load it as a pending placement, then click anywhere on the page to stamp it. You can click multiple times to place the same signature in several locations.
+
+    If you have no saved signatures, click **Create Signature** in the popup to open the signature creator. Draw your signature on the canvas, click **Save Signature**, and it becomes available for placement immediately.
+  </Card>
+</CardGroup>
+
+## Switching tools
+
+You can switch tools three ways:
+
+<Steps>
+  <Step title="Toolbar buttons">
+    Click any of the five tool buttons in the top toolbar. The active tool is highlighted in green.
+  </Step>
+  <Step title="Context menu">
+    Right-click the page canvas to open the context menu. **Select Tool**, **Text Tool**, **Highlight Tool**, and **Draw Tool** are listed directly in the menu.
+  </Step>
+  <Step title="Committing or escaping an action">
+    Pressing `Enter` to commit a text box keeps the Text tool active. Pressing `Escape` to discard a text box also keeps the current tool. Switch tools manually using the toolbar or context menu when you want a different mode.
+  </Step>
+</Steps>
+
+<Note>
+  Switching away from the Signature tool closes the signature popup and clears any pending signature. Switching away from the Text tool commits any open text box automatically.
+</Note>

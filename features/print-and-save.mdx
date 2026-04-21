@@ -1,0 +1,78 @@
+---
+title: "Save edited PDFs and print with flattened annotations"
+description: Save your edited PDF with annotations flattened, or send it to a printer. KillerPDF uses a clean-then-annotate approach to keep the original unmodified.
+---
+
+KillerPDF writes annotations into a PDF using PdfSharpCore's `XGraphics` layer when you save or print. Rather than modifying the document you are working on directly, it applies a "clean copy" technique that keeps your in-memory document free of flattened graphics so you can continue editing after saving.
+
+## Save As
+
+KillerPDF only offers **Save As** — saving to a new path you choose. There is no "Save" operation that overwrites the file you opened.
+
+<Warning>
+The file you originally opened is never overwritten automatically. Every save prompts you for a destination path. If you want to update the original file, choose the same path in the Save As dialog.
+</Warning>
+
+### How Save As works
+
+<Steps>
+  <Step title="Click Save As or press the save button">
+    KillerPDF checks whether any annotations exist on any page.
+  </Step>
+  <Step title="Clean copy is saved first (if annotations exist)">
+    KillerPDF saves the current in-memory document — without any annotations drawn into it — to a temporary file. This is the clean copy that you will continue working from.
+  </Step>
+  <Step title="Annotations are flattened into the document">
+    KillerPDF calls `DrawAnnotationsOnDocument`, which iterates over every annotation on every page and uses `XGraphics.FromPdfPage` with `XGraphicsPdfPageOptions.Append` to draw each annotation directly into the PDF page stream.
+  </Step>
+  <Step title="Annotated document is saved to your chosen path">
+    The now-modified document is saved to the path you selected in the dialog.
+  </Step>
+  <Step title="Working document is restored from the clean copy">
+    KillerPDF closes the annotated document and reopens the clean temporary file as the active working document. Your in-memory annotations remain intact, so you can keep editing.
+  </Step>
+</Steps>
+
+If there are no annotations, KillerPDF simply saves the document as-is to your chosen path — no temporary files are involved.
+
+## Print
+
+Press **Ctrl+P** or right-click the canvas and choose **Print** to send the current document to a printer.
+
+The print process follows the same clean-copy logic as Save As:
+
+1. If annotations exist, a clean temporary copy is saved and a separate print-ready copy with annotations flattened is written to the system temp directory.
+2. The annotated print file is sent to the default PDF viewer or PDF printer via `Process.Start` with the shell `"print"` verb and `UseShellExecute = true`.
+3. The working document is restored to the clean copy.
+
+If there are no annotations, a clean copy is written to the temp directory and sent directly to the printer.
+
+<Note>
+KillerPDF delegates printing to Windows' default PDF handler via the shell "print" verb. Your system's default PDF application or print queue handles the final print dialog and printer selection.
+</Note>
+
+## What gets flattened
+
+`DrawAnnotationsOnDocument` converts every annotation type to permanent PDF graphics:
+
+<AccordionGroup>
+  <Accordion title="Highlight annotations">
+    A filled rectangle is drawn using `XSolidBrush` with the highlight's stored RGBA color. Coordinates are scaled from canvas pixels to PDF points using the page's physical dimensions.
+  </Accordion>
+  <Accordion title="Ink (freehand drawing) annotations">
+    Each consecutive pair of points in the stroke is drawn as a line segment using `XPen` with round line caps and joins, preserving the appearance of smooth curves.
+  </Accordion>
+  <Accordion title="Text box annotations">
+    Each line of the text content is drawn using `XFont("Segoe UI", fontSize)` with `XBrushes.Black`.
+  </Accordion>
+  <Accordion title="Text edit annotations">
+    A white-filled rectangle covers the original text's bounding box, then the replacement text is drawn using the font name and size detected from the original PDF content.
+  </Accordion>
+  <Accordion title="Signature annotations">
+    Each stroke segment is drawn as a line using `XPen` at `2 × Scale × sx` width, where `sx` is the canvas-to-PDF coordinate scale factor. This preserves relative stroke thickness regardless of the page's physical size.
+  </Accordion>
+</AccordionGroup>
+
+## Temporary files
+
+KillerPDF writes temporary PDFs to the system temp directory (`Path.GetTempPath()`). They are named with a `killerpdf_clean_` or `killerpdf_print_` prefix followed by a random GUID. These files are not cleaned up automatically; Windows will remove them the next time the temp directory is purged.

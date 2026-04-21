@@ -1,0 +1,43 @@
+---
+title: "KillerPDF is GPLv3: what that means for you"
+description: "KillerPDF is released under the GNU General Public License v3. Forks and redistributions must provide source code and use the same GPLv3 license."
+---
+
+KillerPDF is free, open-source software released under the [GNU General Public License v3](https://www.gnu.org/licenses/gpl-3.0.html). The full license text is in the `LICENSE` file at the root of the [GitHub repository](https://github.com/SteveTheKiller/KillerPDF). GPLv3 gives you broad freedoms to use, study, modify, and share the software — but those freedoms come with one core responsibility: if you distribute a modified version, you must pass the same freedoms on to the people you distribute it to.
+
+## What GPLv3 means in plain language
+
+GPLv3 is a **copyleft** license. The key points for users and contributors:
+
+- **Free to use** — run KillerPDF for any purpose, personal or professional, at no cost.
+- **Free to study** — the full source code is available. You can read it, learn from it, and build on it.
+- **Free to modify** — change whatever you like in your own copy.
+- **Free to redistribute** — share copies of the original or your modified version, with or without charge.
+- **Copyleft applies on distribution** — if you distribute KillerPDF or a modified version of it, you must provide the corresponding source code and license your version under GPLv3. You cannot strip the license or add restrictions that prevent recipients from exercising these same rights.
+
+<Note>
+  The copyleft requirement is triggered by **distribution**, not by private use. You can modify KillerPDF for internal use without publishing your changes. As soon as you distribute the modified binary to others — including inside a commercial product — you must make the source available under GPLv3. Commercial rebrands that avoid open-sourcing are not permitted.
+</Note>
+
+## GPL3 source bundle
+
+Every build of KillerPDF automatically produces a `KillerPDF-<version>-src.zip` file alongside the binary as part of the `BundleSource` MSBuild post-publish target. This ZIP contains all tracked source files (as reported by `git ls-files`) and satisfies the GPLv3 requirement to provide a corresponding source distribution with every binary release. You can find the source ZIP for each release on the [GitHub Releases page](https://github.com/SteveTheKiller/KillerPDF).
+
+## Frequently asked questions
+
+<AccordionGroup>
+  <Accordion title="What can I do with KillerPDF?">
+    Under GPLv3 you can:
+
+    - **Use it personally or commercially** — run KillerPDF on any machine, for any purpose, including in a business context, without paying anything or asking for permission.
+    - **Modify the source** — clone the repository, make changes, and build your own version for private or internal use.
+    - **Redistribute it** — share the original binary or your modified version with anyone, free of charge or for a fee, as long as you include the GPLv3 license text and make the corresponding source available.
+    - **Fork and release under GPLv3** — publish a fork on GitHub or anywhere else, provided your fork is also licensed under GPLv3 and its source is publicly accessible.
+
+    What you **cannot** do is distribute a modified version — including as part of a commercial product — without providing the source code under GPLv3. You also cannot apply additional restrictions that would prevent recipients from exercising the rights the license grants them.
+  </Accordion>
+</AccordionGroup>
+
+## Full license text
+
+The complete terms are in the `LICENSE` file in the repository root. You can read it on [GitHub](https://github.com/SteveTheKiller/KillerPDF/blob/main/LICENSE) or at [gnu.org/licenses/gpl-3.0.html](https://www.gnu.org/licenses/gpl-3.0.html).

@@ -1,0 +1,71 @@
+---
+title: "Compile and build KillerPDF from source"
+description: "Clone the repo, run dotnet publish with .NET 8 SDK, and get a single portable EXE. A GPL3 source ZIP is bundled automatically by the build."
+---
+
+KillerPDF targets .NET Framework 4.8 so end users never need a separate runtime, but it uses the .NET 8 SDK (or later) toolchain to compile. The publish step produces a single Costura-bundled `KillerPDF.exe` and runs a post-publish MSBuild target — `BundleSource` — that automatically packages a GPL3-compliant source ZIP alongside the binary.
+
+## Prerequisites
+
+- **.NET 8 SDK or later** — the modern SDK is required even though the output targets net48, because it provides the build tooling, NuGet restore, and MSBuild features the project relies on. Download from [dotnet.microsoft.com](https://dotnet.microsoft.com/download).
+- **Windows** — KillerPDF uses WPF (`<UseWPF>true</UseWPF>`), which can only be built on Windows.
+- **Git** — required to clone the repository. The `BundleSource` post-publish script uses `git ls-files` to enumerate tracked source files for the GPL3 ZIP; without git in `PATH` the source bundle step is skipped with a warning.
+
+## Build steps
+
+<Steps>
+  <Step title="Clone the repository">
+    ```powershell
+    git clone https://github.com/SteveTheKiller/KillerPDF.git
+    cd KillerPDF
+    ```
+  </Step>
+
+  <Step title="Restore and publish">
+    Run the publish command from the repository root. NuGet restore happens automatically.
+
+    ```powershell
+    dotnet publish -c Release
+    ```
+
+    The build targets `net48` with `PlatformTarget=x64` and bundles all dependencies into the output EXE using Costura.Fody.
+  </Step>
+
+  <Step title="Find the output">
+    After the publish completes, two files appear in `bin/Release/net48/publish/`:
+
+    | File | Description |
+    |---|---|
+    | `KillerPDF.exe` | Single portable EXE, all NuGet assemblies embedded via Costura.Fody |
+    | `KillerPDF-<version>-src.zip` | GPL3 corresponding source archive, e.g. `KillerPDF-1.1.1-src.zip` |
+  </Step>
+</Steps>
+
+<Tip>
+  You can copy `KillerPDF.exe` anywhere — a USB drive, a network share, a colleague's desktop — and run it directly. No installer or .NET runtime install is required on the target machine.
+</Tip>
+
+## Key NuGet packages
+
+The project file (`KillerPDF.csproj`) pulls in these packages at build time:
+
+| Package | Version | Role |
+|---|---|---|
+| `Docnet.Core` | 2.6.0 | High-quality PDF rendering via PDFium |
+| `PdfSharpCore` | 1.3.67 | PDF manipulation (merge, split, save) |
+| `PdfPig` | 0.1.14 | Text extraction for search and copy |
+| `Costura.Fody` | 5.7.0 | Embeds all assemblies into the single EXE |
+| `PolySharp` | 1.15.0 | C# language polyfills for the net48 target |
+| `System.Text.Json` | 8.0.5 | JSON serialisation |
+
+## Why .NET 8 SDK for a net48 target?
+
+KillerPDF was retargeted from .NET 8 to .NET Framework 4.8 in v1.1.0 so that end users never need to install a separate runtime — .NET Framework 4.8 ships with every supported Windows 10 and 11 release. However, .NET Framework's own MSBuild tooling cannot build projects that use the modern SDK-style project format or features like `<Nullable>enable</Nullable>`, `<ImplicitUsings>enable</ImplicitUsings>`, and `LangVersion=latest`. The .NET 8 SDK bridges this gap: it targets net48 at runtime while still compiling with the latest C# language version and PolySharp polyfills.
+
+## The BundleSource post-publish target
+
+The `BundleSource` MSBuild target defined in `KillerPDF.csproj` runs automatically after every `dotnet publish`. It calls `build/bundle-source.ps1`, which uses `git ls-files` to collect all tracked repository files (so `bin/`, `obj/`, and `.vs/` are never included), copies them into a temporary staging directory, and compresses them into `KillerPDF-<version>-src.zip` in the publish output folder. This ZIP is the GPL3-required corresponding source distribution that ships alongside each release.
+
+<Note>
+  The source bundle script requires `git` to be available in your `PATH`. If it is not, the script prints a warning and exits cleanly — your `KillerPDF.exe` is still produced normally.
+</Note>

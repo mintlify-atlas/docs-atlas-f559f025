@@ -1,0 +1,47 @@
+---
+title: "Get KillerPDF running on Windows in under a minute"
+description: "How to get KillerPDF running on Windows in under a minute — download the ZIP, extract anywhere, and launch the EXE with no installation required."
+---
+
+KillerPDF is distributed as a single portable EXE. All dependencies — including the PDFium rendering engine (Docnet.Core), PdfSharpCore, PdfPig, and every other library — are bundled directly into the binary using [Costura.Fody](https://github.com/Fody/Costura). The app targets .NET Framework 4.8, which ships with every supported Windows release, so there is nothing extra to install. <Badge color="blue">v1.1.1</Badge>
+
+<Note>
+  KillerPDF requires Windows 10 or 11 (64-bit). No .NET runtime installation is needed — .NET Framework 4.8 is already present on every supported Windows version.
+</Note>
+
+## Download and run
+
+<Steps>
+  <Step title="Download the ZIP">
+    Go to the latest release and download `KillerPDF.zip`:
+
+    ```
+    https://github.com/SteveTheKiller/KillerPDF/releases/latest/download/KillerPDF.zip
+    ```
+
+    The ZIP is approximately 6 MB.
+  </Step>
+  <Step title="Extract anywhere">
+    Right-click the ZIP and select **Extract All**, or use any archive tool. You can extract to:
+
+    - Your Desktop
+    - A USB drive
+    - A network share
+    - Any folder you have read access to
+
+    There are no registry entries, no installer, and no config files written anywhere on your system. The EXE is fully self-contained.
+  </Step>
+  <Step title="Run KillerPDF.exe">
+    Double-click `KillerPDF.exe`. No admin rights are required.
+
+    If Windows SmartScreen shows a warning about an unrecognized app, click **More info** then **Run anyway**. This appears because the binary is not code-signed; the source is public and auditable on GitHub.
+  </Step>
+</Steps>
+
+<Tip>
+  Because KillerPDF writes nothing to the Windows registry, you can keep the EXE on a USB drive and run it on any Windows 10 or 11 machine without leaving a trace.
+</Tip>
+
+## What's in the ZIP
+
+The download contains a single file: `KillerPDF.exe`. There are no DLLs, no configuration files, and no separate runtime packages. Costura.Fody embeds all NuGet dependencies as compressed resources inside the EXE at build time and extracts them into memory at startup.

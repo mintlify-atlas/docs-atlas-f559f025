@@ -1,0 +1,76 @@
+{
+  "projectType": "saas",
+  "projectName": "KillerPDF",
+  "projectDescription": "A portable, single-EXE PDF editor for Windows that lets you view, annotate, edit, merge, split, sign, search, and print PDFs — no installer, no account, no telemetry.",
+  "theme": "almond",
+  "primaryColor": "#4ad97e",
+  "lightColor": "#2f6e46",
+  "darkColor": "#1c1c1c",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": [
+              "introduction",
+              "getting-started/download-and-run",
+              "getting-started/opening-a-pdf"
+            ]
+          },
+          {
+            "group": "Core Features",
+            "pages": [
+              "features/viewing-and-navigation",
+              "features/annotations",
+              "features/text-editing",
+              "features/signatures",
+              "features/search",
+              "features/merge-split-reorder",
+              "features/print-and-save"
+            ]
+          },
+          {
+            "group": "Reference",
+            "pages": [
+              "reference/keyboard-shortcuts",
+              "reference/tools-overview",
+              "reference/requirements"
+            ]
+          },
+          {
+            "group": "Contributing",
+            "pages": [
+              "contributing/build-from-source",
+              "contributing/license"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "keyFeatures": [
+    "High-quality PDF rendering via PDFium (Docnet.Core)",
+    "Inline text editing with font matching against the original document",
+    "Text boxes, freehand drawing, and highlight overlays with adjustable color, size, and opacity",
+    "Draw and save reusable signatures — click to place on any page",
+    "Full-text search with result highlighting",
+    "Drag-select to copy text from PDF pages",
+    "Merge multiple PDFs and split out selected pages",
+    "Drag-and-drop page reordering",
+    "Print with annotations flattened into the output",
+    "Single portable EXE (~6 MB), no installer, no runtime, no admin rights, no telemetry"
+  ],
+  "publicApiSurface": [
+    "EditTool enum (Select, Text, Highlight, Draw, Signature)",
+    "PageAnnotation (base class)",
+    "TextAnnotation",
+    "InkAnnotation",
+    "HighlightAnnotation",
+    "TextEditAnnotation",
+    "SignatureAnnotation",
+    "SavedSignature",
+    "SerializablePoint"
+  ]
+}

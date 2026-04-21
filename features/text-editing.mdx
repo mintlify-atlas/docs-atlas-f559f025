@@ -1,0 +1,84 @@
+---
+title: Edit existing PDF text with inline text editing
+description: Double-click a text line to edit it inline. KillerPDF matches the original font, whites out the old text, and writes the replacement into the PDF on save.
+---
+
+KillerPDF lets you correct or replace existing text directly on the page without exporting to another format. The feature works by detecting the underlying text through PdfPig's letter metadata, overlaying an editable text box at the same position, and on commit recording a `TextEditAnnotation` that whites out the original and draws the replacement text.
+
+<Note>
+This is an overlay-based approach, not a native PDF text stream edit. The original content bytes in the PDF are unchanged; the edit appears as a white rectangle covering the old text plus a new text string drawn on top. This is flattened permanently into the PDF when you save.
+</Note>
+
+## How inline editing works
+
+When you double-click a position on the canvas in Select mode, KillerPDF:
+
+1. Opens the current page with PdfPig and converts all word bounding boxes from PDF coordinate space (origin at bottom-left) to canvas coordinate space (origin at top-left).
+2. Finds all words whose vertical bounds overlap the click Y position, assembling them into a line.
+3. Reads font metadata from the first letter of the first word: `letter.FontSize` for size, and `letter.FontName` (or `word.FontName` as a fallback) for the font family.
+4. Strips PDF subset prefixes from the font name. PDF fonts are often embedded with names like `ABCDEF+HelveticaNeue`; KillerPDF trims everything up to and including the `+` character, then removes common suffixes like `,Bold`, `-Italic`, `-Roman`, and `-Regular` to recover a clean family name.
+5. Places a `TextBox` over the line, pre-filled with the joined word text, styled with the detected font family and a scaled font size derived from `pdfFontPts × (renderH / pdfH)`.
+6. Adds a white `Rectangle` behind the text box so the original text is visually hidden while you type.
+
+## Committing and cancelling an edit
+
+| Key | Action |
+|---|---|
+| **Enter** | Commits the edit. Creates a `TextEditAnnotation` and re-renders the page annotations. |
+| **Escape** | Cancels the edit. Removes the text box and white-out rectangle. Original text reappears. |
+| **Click away** | Commits the edit automatically via the `LostFocus` handler. |
+
+If the new text is identical to the original, or is empty after trimming, the edit is silently discarded — no annotation is created.
+
+## TextEditAnnotation vs TextAnnotation
+
+KillerPDF has two distinct annotation types for text-related work:
+
+<Tabs>
+  <Tab title="TextEditAnnotation">
+    Created by **double-clicking existing PDF text** in Select mode.
+
+    Stores:
+    - `OriginalBounds` — the canvas rectangle of the original text line (used for the white-out)
+    - `Position` — top-left position for the replacement text
+    - `OriginalContent` / `NewContent` — the old and new strings
+    - `FontName` — cleaned font family name detected from PdfPig
+    - `FontSize` — scaled font size in canvas pixels
+
+    On save, KillerPDF draws a white rectangle over `OriginalBounds`, then draws `NewContent` at `Position` using the detected font.
+  </Tab>
+  <Tab title="TextAnnotation">
+    Created by **clicking in Text mode** (the Text tool in the toolbar).
+
+    Stores:
+    - `Position` — where you clicked
+    - `Content` — the text you typed
+    - `FontSize` — defaults to 14 pt
+
+    This is a free-floating label added on top of the page, not tied to any existing text. It is always rendered in Segoe UI.
+  </Tab>
+</Tabs>
+
+## How to edit existing text
+
+<Steps>
+  <Step title="Select the Select tool">
+    Make sure the Select tool is active (it is the default). The cursor should be an arrow.
+  </Step>
+  <Step title="Double-click the text line you want to edit">
+    KillerPDF highlights the detected line in a green-bordered text box pre-filled with the original content. The original text is hidden behind a white overlay.
+  </Step>
+  <Step title="Type your replacement text">
+    Edit the content as needed. The text box uses the font detected from the PDF so the visual result is close to the original.
+  </Step>
+  <Step title="Press Enter to commit">
+    The edit is stored as a `TextEditAnnotation`. Press Escape instead to discard changes and restore the original display.
+  </Step>
+</Steps>
+
+## Limitations
+
+- Edits are applied as graphic overlays, not as modifications to the PDF's text content streams. They are flattened on save using PdfSharpCore's `XGraphics.DrawString`.
+- Font matching is best-effort. If the original font is not installed on your system, KillerPDF falls back to Segoe UI. The size scaling is calculated from the PDF's point size and the render scale factor, so it should be visually close.
+- Multi-column layouts or right-to-left text may produce unexpected line grouping because KillerPDF assembles lines by Y-coordinate proximity.
+- Only one line can be edited at a time. Double-clicking a second line while an edit is active commits the first edit before opening the second.

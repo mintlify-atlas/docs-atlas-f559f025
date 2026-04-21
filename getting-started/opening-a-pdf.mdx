@@ -1,0 +1,52 @@
+---
+title: "How to open a PDF file in KillerPDF"
+description: "Two ways to open a PDF in KillerPDF: drag-and-drop onto the drop zone, or use the Open toolbar button to browse with a file picker."
+---
+
+When you launch KillerPDF with no file loaded, the main area shows a drop zone — a large target area in the center of the window that prompts you to open a file. Once a PDF is opened, the drop zone collapses and the page panel and editing canvas appear in its place.
+
+## How to open a file
+
+<Tabs>
+  <Tab title="Drag and drop">
+    Drag any `.pdf` file from Windows Explorer and drop it directly onto the drop zone in the center of the KillerPDF window. The drop zone has `AllowDrop` enabled and accepts `DataFormats.FileDrop` transfers.
+
+    This is the fastest method if you already have a file browser open. You can drop a file onto the drop zone at any time — including when another PDF is already loaded, which will close the current file and open the new one.
+  </Tab>
+  <Tab title="Open button">
+    Click the **Open** button in the toolbar. A standard Windows file picker opens with the filter set to **PDF files (`*.pdf`)**, so only `.pdf` files are shown.
+
+    Select your file and click **Open**. Non-PDF files are not selectable in the dialog.
+
+    This corresponds to the `Open_Click` handler in the source, which calls `OpenFileDialog` with the filter `"PDF files|*.pdf"` before passing the selected path to `OpenFile()`.
+  </Tab>
+</Tabs>
+
+<Tip>
+  KillerPDF only opens PDF files. The file picker enforces a `*.pdf` filter, and drag-and-drop will only load the file if it is a valid PDF. Attempting to open a corrupt or non-PDF file shows an error dialog.
+</Tip>
+
+## What happens after opening
+
+After a file loads successfully, KillerPDF does the following:
+
+1. **Collapses the drop zone** — `DropZone.Visibility` is set to `Collapsed`.
+2. **Shows the page panel** — a `PagePreviewPanel` slides in on the left side of the window, populated with thumbnail images of every page. Each thumbnail is rendered at 256×256 resolution using PDFium (Docnet.Core) and labeled **Page N** below.
+3. **Selects the first page** — `PageList.SelectedIndex` is set to `0`, which triggers a full-resolution render of page 1 in the main canvas.
+4. **Updates the status bar** — the status bar at the bottom of the window shows:
+
+   ```
+   Opened {filename} - {n} page(s)
+   ```
+
+   For example: `Opened contract.pdf - 12 page(s)`
+
+## The page panel
+
+The page panel on the left shows a scrollable list of page thumbnails. Click any thumbnail to navigate directly to that page. The currently selected page is highlighted in the list.
+
+If a page thumbnail fails to render (for example, due to a complex page structure), the panel falls back to a plain text label showing the page number.
+
+<Note>
+  KillerPDF supports PDF files only. There is no support for opening other document formats such as `.docx` or `.png` directly.
+</Note>

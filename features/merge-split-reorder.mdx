@@ -1,0 +1,85 @@
+---
+title: "Merge, split, delete, and reorder PDF pages"
+description: Combine multiple PDFs, extract selected pages into a new file, delete unwanted pages, and drag pages into a new order — all from the page panel.
+---
+
+KillerPDF provides full page management from the left panel: merge additional PDFs into the open document, extract a subset of pages into a separate file, delete pages you no longer need, and rearrange pages by dragging or using the Move Up / Move Down buttons. All operations work on the in-memory document via PdfSharpCore and commit to a temporary file before reloading.
+
+## Merging PDFs
+
+Merge appends the pages of one or more external PDFs to the end of the currently open document.
+
+<Steps>
+  <Step title="Open a base PDF">
+    Open the PDF you want to merge into using the Open button or by dragging a file onto the drop zone.
+  </Step>
+  <Step title="Click the Merge button">
+    Click the Merge button in the toolbar. A file picker opens with multi-select enabled.
+  </Step>
+  <Step title="Select one or more PDFs to append">
+    Choose the files you want to merge. KillerPDF opens each file in import mode and appends all of its pages, in order, to the current document.
+  </Step>
+  <Step title="Review the updated page panel">
+    The page panel refreshes automatically and the status bar shows the new total page count, for example: "Merged 2 file(s) — 18 total pages".
+  </Step>
+</Steps>
+
+<Note>
+Merge appends pages in the order you select the files. To control order, add one file at a time.
+</Note>
+
+## Splitting (extracting pages)
+
+Split saves a subset of pages from the current document into a new PDF without modifying the original.
+
+<Steps>
+  <Step title="Select the pages to extract">
+    Click a page in the left panel to select it. Hold **Ctrl** or **Shift** to select multiple pages. `PageList.SelectedItems` tracks all selected entries.
+  </Step>
+  <Step title="Click the Split button">
+    Click the Split button in the toolbar. A Save dialog opens.
+  </Step>
+  <Step title="Choose a save location">
+    Enter a file name and click Save. KillerPDF opens the current file in import mode, copies only the selected pages (in their original order), and saves the new document.
+  </Step>
+  <Step title="Confirm the extraction">
+    The status bar confirms how many pages were extracted, for example: "Extracted 3 page(s) to report-section.pdf". The current document is unchanged.
+  </Step>
+</Steps>
+
+## Deleting pages
+
+<Steps>
+  <Step title="Select the pages to delete">
+    Select one or more pages in the left panel using Ctrl+click or Shift+click for multi-selection.
+  </Step>
+  <Step title="Click the Delete button">
+    Click the Delete button in the toolbar. A confirmation dialog asks "Delete N page(s)?".
+  </Step>
+  <Step title="Confirm">
+    Click **Yes**. KillerPDF removes the pages by index (in descending order to avoid index shifting) and reloads the document from a temporary file.
+  </Step>
+</Steps>
+
+<Warning>
+Deleting pages cannot be undone. KillerPDF does not keep a history of page deletions. If you need the deleted pages later, use Split to extract them before deleting.
+</Warning>
+
+## Reordering pages
+
+You can reorder pages in two ways:
+
+<Tabs>
+  <Tab title="Drag and drop">
+    Click and hold a page thumbnail in the left panel, then drag it to the desired position. KillerPDF calculates the target index by comparing the drop Y position against the midpoint of each item. The page is moved using `doc.Pages.RemoveAt` followed by `doc.Pages.Insert`.
+  </Tab>
+  <Tab title="Move Up / Move Down">
+    Select a single page in the panel and click **Move Up** or **Move Down** in the toolbar. Each click moves the selected page one position in the respective direction. The selection follows the moved page so you can click repeatedly to move a page multiple positions.
+  </Tab>
+</Tabs>
+
+After any reorder operation, KillerPDF saves the document to a temporary file, reloads the page list, and restores the selection to the moved page.
+
+<Tip>
+After a drag-and-drop reorder, check the page panel to confirm the new order before saving. The status bar does not confirm the move explicitly.
+</Tip>

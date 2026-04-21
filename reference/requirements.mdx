@@ -1,0 +1,48 @@
+---
+title: "KillerPDF system requirements and compatibility"
+description: "KillerPDF runs on Windows 10 or 11 (64-bit). No runtime installation is required — .NET Framework 4.8 ships with every supported Windows release."
+---
+
+KillerPDF is a single self-contained EXE. There is nothing to install, no runtime to download, and no account to create. Drop the EXE anywhere and run it.
+
+## Runtime requirements
+
+| Requirement | Detail |
+| --- | --- |
+| Operating system | Windows 10 or Windows 11, 64-bit |
+| .NET Framework | 4.8 — ships with every supported Windows release |
+| Admin rights | Not required |
+| Internet connection | Not required |
+| Disk space | ~6 MB (the zipped EXE; no installation footprint) |
+
+<Note>
+  .NET Framework 4.8 is included in Windows 10 (version 1903 and later) and all editions of Windows 11. You do not need to install anything before running KillerPDF.
+</Note>
+
+## What "no install" means in practice
+
+KillerPDF uses [Costura.Fody](https://github.com/Fody/Costura) to bundle all managed dependencies — including PDFium (via Docnet.Core), PdfSharpCore, and PdfPig — directly inside the EXE at build time. There are no DLLs to place alongside the executable, no GAC entries, and no registry writes.
+
+You can run KillerPDF from a USB drive, a network share, or a read-only folder. Signatures are saved to a `signatures.json` file in the same directory as the EXE, which is the only file KillerPDF writes to disk during normal use.
+
+## Build requirements (contributors only)
+
+If you are compiling KillerPDF from source rather than using the prebuilt release, you need:
+
+| Requirement | Detail |
+| --- | --- |
+| .NET SDK | 8.0 or later |
+| Target framework (output) | `net48` (set in `KillerPDF.csproj`) |
+| Platform target | `x64` (set in `KillerPDF.csproj`) |
+
+<Tip>
+  The SDK version and the output framework are intentionally different. The .NET 8 SDK compiles the project but the resulting EXE targets .NET Framework 4.8, which is why no runtime install is needed on end-user machines.
+</Tip>
+
+To build, clone the repository and run:
+
+```powershell
+dotnet publish -c Release
+```
+
+Output lands in `bin/Release/net48/publish/`. The publish step produces a single bundled `KillerPDF.exe` and a versioned source ZIP for GPL3 compliance.

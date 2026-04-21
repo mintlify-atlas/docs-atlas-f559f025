@@ -1,0 +1,49 @@
+---
+title: Viewing and navigating PDFs in KillerPDF
+description: Navigate PDF pages using the thumbnail panel, zoom controls, and scrollbars. KillerPDF renders every page via PDFium at up to 1536×1536 pixels.
+---
+
+KillerPDF renders every page through PDFium via the Docnet.Core wrapper, producing a pixel-accurate bitmap at up to 1536×1536 pixels before applying your zoom level. This gives you sharp, anti-aliased text and crisp graphics even on dense technical drawings or small-print legal documents.
+
+## Page thumbnails
+
+The left panel shows a scrollable list of page thumbnails. Thumbnails are rendered at 256×256 using the same PDFium pipeline, then letterboxed inside a 140-pixel-wide slot with a thin border. Each entry is labeled "Page N" below the image.
+
+Click any thumbnail to jump directly to that page. The main canvas renders the full-resolution version of that page and the status bar at the bottom of the window updates to **Page X of Y**.
+
+<Note>
+If a thumbnail cannot be rendered (for example, a page with unsupported content), KillerPDF falls back to a plain text label so the panel remains usable.
+</Note>
+
+## Zoom
+
+Use **Ctrl + Mouse Wheel** to zoom in and out. KillerPDF applies a `ScaleTransform` to the page content grid so the entire rendered bitmap scales without a re-render.
+
+| Setting | Value |
+|---|---|
+| Minimum zoom | 25% (`ZoomMin = 0.25`) |
+| Maximum zoom | 500% (`ZoomMax = 5.0`) |
+| Step per wheel tick | 15% (`ZoomStep = 0.15`) |
+
+The status bar shows the current zoom percentage alongside the page number when you zoom, for example: **Page 3 of 12 - 130%**. When simply navigating pages without zooming, the status bar shows **Page X of Y**.
+
+<Tip>
+Double-clicking the title bar toggles between normal and maximized window size, giving you more screen area without adjusting zoom.
+</Tip>
+
+## Scrolling at high zoom
+
+When the page is larger than the visible area — for example at high zoom — use the horizontal and vertical scrollbars that appear on the `PagePreviewPanel` ScrollViewer to navigate around the page. The scrollbars appear automatically when content overflows the viewport.
+
+## High-quality rendering with PDFium
+
+KillerPDF uses Docnet.Core (a .NET binding for PDFium) to decode each page. The render dimensions are capped at **1536×1536 pixels**, which is wide enough to display even large A3 pages at a comfortable zoom without excessive memory use. Pixels are written as BGRA32 bitmaps directly into a `WriteableBitmap`, keeping the render path fast and dependency-free.
+
+<AccordionGroup>
+  <Accordion title="What happens when I switch pages?">
+    Selecting a different thumbnail commits any active text-edit box, clears the current annotation selection, and calls `RenderPage` with the new index. The canvas dimensions are updated to match the newly rendered bitmap so annotation overlays always align with page content.
+  </Accordion>
+  <Accordion title="Why is the zoom reset when I open a new file?">
+    Opening a file resets the annotation canvas and page list but does not automatically reset the zoom level. Use Ctrl + Wheel to return to 100% if needed.
+  </Accordion>
+</AccordionGroup>

@@ -1,0 +1,76 @@
+---
+title: Draw and place reusable signatures in KillerPDF
+description: Create handwritten signatures on a drawing canvas, save them for reuse, and click to place them on any PDF page. Signatures are stored locally as JSON.
+---
+
+KillerPDF includes a signature tool that lets you draw a handwritten signature once and place it on any page — including across multiple documents — without re-drawing. Saved signatures are stored as JSON stroke data in the same folder as `KillerPDF.exe`, so they travel with the application on a USB drive or portable installation.
+
+## How signatures are stored
+
+Each saved signature is serialized as a `SavedSignature` object in `signatures.json` in the application's base directory (the folder containing `KillerPDF.exe`).
+
+A `SavedSignature` contains:
+
+| Field | Description |
+|---|---|
+| `Id` | A unique GUID identifying the signature |
+| `Name` | Auto-generated label, e.g. "Signature 1" |
+| `Strokes` | A list of stroke paths, each a list of `{X, Y}` points |
+| `CanvasWidth` / `CanvasHeight` | The dimensions of the drawing canvas at creation time (default 400×150) |
+
+When a signature is placed on a page, it is converted to a `SignatureAnnotation` with a `Scale` of **0.5** by default, meaning it is drawn at half the original canvas size.
+
+## Signature popup panel
+
+Clicking the signature button in the toolbar opens the signature popup panel. The panel lists all saved signatures as small previews (210×50 pixels, rendered proportionally from the original stroke data). Clicking a preview selects it for placement.
+
+<Tip>
+The popup closes automatically when you click a signature preview. KillerPDF then waits for you to click on the page to place the signature.
+</Tip>
+
+To delete a saved signature, click the **×** button in the top-right corner of its preview card. The deletion is written to `signatures.json` immediately.
+
+## Create and place a signature
+
+<Steps>
+  <Step title="Open the signature tool">
+    Click the signature button in the toolbar. The signature popup panel appears, listing any previously saved signatures. Click **Create Signature** at the bottom of the panel.
+  </Step>
+  <Step title="Draw your signature">
+    A 460×260 dialog opens with a white drawing canvas. Hold the left mouse button and draw your signature freehand. Use **Clear** to start over. Strokes shorter than 2 points are discarded.
+  </Step>
+  <Step title="Save the signature">
+    Click **Save Signature**. KillerPDF serializes the strokes and canvas dimensions to `signatures.json` and immediately selects the new signature for placement. The dialog closes and the cursor changes to a crosshair.
+  </Step>
+  <Step title="Click on the page to place it">
+    Click anywhere on the PDF page. KillerPDF creates a `SignatureAnnotation` at that position, scaled to 0.5× the original canvas size, and renders it as black ink strokes.
+  </Step>
+  <Step title="Place additional copies (optional)">
+    You can click the page again to place another copy of the same signature. Switch to any other tool to stop placing.
+  </Step>
+</Steps>
+
+## SignatureAnnotation data
+
+When a signature is placed, the following data is stored:
+
+| Field | Description |
+|---|---|
+| `Position` | Canvas coordinates of the top-left corner where you clicked |
+| `Scale` | Default `0.5` — stroke coordinates are multiplied by this factor |
+| `Strokes` | The WPF `Point` lists converted from the saved `SerializablePoint` lists |
+| `SourceWidth` / `SourceHeight` | Original canvas dimensions from the `SavedSignature`, used to scale previews correctly |
+
+On save, the signature is flattened into the PDF using `XGraphics.DrawLine` with a pen width of `2 × Scale × sx` (where `sx` is the canvas-to-PDF coordinate scale factor).
+
+<Warning>
+Signatures are stored in the same directory as `KillerPDF.exe`. If you move or delete the EXE without moving `signatures.json`, your saved signatures will not be available in the new location.
+</Warning>
+
+## Managing saved signatures
+
+Open the signature popup at any time by clicking the signature toolbar button. From the popup you can:
+
+- **Place a signature** — click any signature preview to select it, then click on the page.
+- **Delete a signature** — click the **×** in the top-right corner of the preview. The change is saved to `signatures.json` immediately and the popup refreshes.
+- **Create a new signature** — click **Create Signature** at the bottom of the popup.

@@ -1,0 +1,69 @@
+---
+title: "Find text in a PDF with live search highlighting"
+description: Press Ctrl+F to open the search bar and find text on the current page. Matches highlight in orange with a count shown; multi-word phrases are supported.
+---
+
+KillerPDF includes a built-in text search that highlights matching words directly on the page canvas. Search is powered by PdfPig's word extraction — the same library used for text selection and inline editing — so results are based on the actual text content of the PDF, not on the rendered image.
+
+## Opening and closing the search bar
+
+| Action | Shortcut |
+|---|---|
+| Open search bar | **Ctrl+F** |
+| Close search bar | **Escape** or click **×** in the search bar |
+
+The search bar appears anchored to the top-right of the page view area. It contains a text input field, a match count label, and a close button.
+
+## How search works
+
+KillerPDF extracts all words from the current page using `PdfPig page.GetWords()`. For each word, it checks whether the word's text contains the query (case-insensitive). For multi-word queries, it also concatenates adjacent words with spaces and checks the combined string. This means phrases like "project scope" are matched across separate PDF word tokens.
+
+Matches are converted from PDF coordinate space (origin at bottom-left) to canvas coordinate space (origin at top-left) using the page's width and height alongside the render dimensions stored for that page.
+
+Each match is drawn as a `Rectangle` with:
+- Fill: ARGB `80, 255, 165, 0` (semi-transparent orange)
+- Stroke: ARGB `160, 255, 165, 0` (more opaque orange border)
+
+The overlays are tagged `"SearchHighlight"` so they can be removed cleanly without affecting annotation overlays.
+
+## Live and on-demand search
+
+- **Live**: KillerPDF runs the search automatically as you type once the query reaches **2 or more characters**.
+- **On-demand**: Press **Enter** to force a search at any time, including for single-character queries.
+
+The match count label shows **N found** or **No matches** after each run.
+
+<Note>
+Search operates on the current page only. Switching to a different page while the search bar is open re-runs the search on the new page automatically.
+</Note>
+
+## Performing a search
+
+<Steps>
+  <Step title="Open the search bar">
+    Press **Ctrl+F**. The search bar slides in from the top-right of the page view, and the cursor is placed in the search field.
+  </Step>
+  <Step title="Type your search term">
+    Type at least 2 characters. KillerPDF highlights matches as you type. The label next to the field shows the match count.
+  </Step>
+  <Step title="Refine or run on Enter">
+    Continue typing to narrow results. Press **Enter** to force a re-run if needed. Multi-word phrases (for example, "invoice total") are matched across adjacent word tokens.
+  </Step>
+  <Step title="Close the search bar">
+    Press **Escape** or click **×**. All orange highlight overlays are removed from the canvas.
+  </Step>
+</Steps>
+
+## Multi-word matching
+
+When a single word does not contain the full query, KillerPDF tries combining consecutive words:
+
+```
+words[i].Text + " " + words[i+1].Text + ... up to query.Length + 20 chars
+```
+
+If the combined string contains the query, a single highlight rectangle is drawn spanning from the leftmost to the rightmost bounding box of all matched words. The search moves on to the next unmatched word after a multi-word hit.
+
+<Tip>
+Because KillerPDF uses word-level bounding boxes from PdfPig, the orange rectangles align tightly with individual words or spans, not with the full line.
+</Tip>

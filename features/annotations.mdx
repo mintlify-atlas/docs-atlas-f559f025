@@ -1,0 +1,114 @@
+---
+title: Annotate PDFs with highlights, drawing, and text boxes
+description: Add highlights, freehand drawings, and floating text boxes to any PDF page. Adjust color, stroke size, and opacity per annotation type in the settings bar.
+---
+
+KillerPDF supports three non-destructive annotation types drawn on a transparent canvas that sits directly over the rendered page. Annotations live in memory until you save; on save they are flattened into the PDF using PdfSharpCore's `XGraphics` layer. Each annotation type has its own tool, accessible from the toolbar.
+
+## Annotation types
+
+<Tabs>
+  <Tab title="Highlight">
+    **HighlightAnnotation** — a filled rectangle dragged over a region of the page.
+
+    The default color is semi-transparent yellow (ARGB `80, 255, 255, 0`). You can change the color and opacity with the settings bar that appears when the Highlight tool is active.
+
+    Internally, a `HighlightAnnotation` stores a `Rect Bounds` plus individual RGBA byte components so the color survives JSON-less in-memory round-trips.
+  </Tab>
+  <Tab title="Drawing">
+    **InkAnnotation** — a freehand polyline captured as a list of `Point` values.
+
+    The default stroke color is red (fully opaque), and the default width is 3 px. The settings bar lets you change color, stroke size (1–20 px), and opacity.
+
+    Internally, `InkAnnotation` stores `List<Point> Points`, `double StrokeWidth`, and individual RGBA bytes. Strokes shorter than 3 points are discarded automatically.
+  </Tab>
+  <Tab title="Text box">
+    **TextAnnotation** — a floating text label placed at a specific position on the page.
+
+    Click anywhere in Text mode to place an editable `TextBox`. Type your content, then press **Enter** or click away to commit. The annotation is stored as `TextAnnotation` with a `Position`, `Content` string, and `FontSize` (default 14 pt).
+
+    Text boxes are rendered in Segoe UI and are selectable and deletable like other annotations.
+  </Tab>
+</Tabs>
+
+## Draw and highlight settings bar
+
+Switching to the Draw or Highlight tool reveals a settings bar below the toolbar. The bar disappears when you switch to any other tool.
+
+### Color swatches
+
+Ten preset colors are available:
+
+| Color name | Use case |
+|---|---|
+| Red | Critical markup |
+| SaddleBrown | Notes on diagrams |
+| Orange | General attention |
+| Gold | Emphasis |
+| LimeGreen | Approval or correct |
+| DodgerBlue | References |
+| MediumPurple | Secondary notes |
+| DeepPink | Personal markup |
+| White | Cover-up strokes (draw mode) |
+| Black | Standard ink |
+
+Click a swatch to apply it to the active tool. The selected swatch is highlighted with a green border.
+
+### Size slider (draw only)
+
+A slider adjusts stroke width from **1 px** to **20 px**. The current value is displayed as a label next to the slider and updates live as you drag.
+
+### Opacity slider
+
+Both Draw and Highlight expose an opacity slider ranging from **10 to 255** (mapped to roughly 4%–100% in the label). Changing opacity on the draw tool updates the alpha channel of the draw color; on the highlight tool it updates the highlight color's alpha component.
+
+## Selecting and deleting annotations
+
+<Steps>
+  <Step title="Switch to Select mode">
+    Click the **Select** button in the toolbar or press nothing — Select is the default tool when KillerPDF opens.
+  </Step>
+  <Step title="Click an annotation">
+    A single click on any annotation shows a green selection border around it and updates the status bar to confirm what is selected (for example, "Selected highlight annotation — press Delete to remove").
+  </Step>
+  <Step title="Delete the annotation">
+    Press **Delete** to remove the selected annotation. You can also right-click the canvas and choose **Delete Selected** from the context menu.
+  </Step>
+</Steps>
+
+## Undo and clear
+
+- **Ctrl+Z** removes the last annotation added to the current page. Undo is per-page and does not cross page boundaries.
+- **Right-click → Clear Page Annotations** removes all annotations from the current page at once. There is no undo for a full clear, so use it with care.
+
+<Warning>
+Clear Page Annotations removes every annotation on the active page immediately and cannot be undone. Make sure you have saved a clean copy if you might want to recover them.
+</Warning>
+
+## How to add a highlight
+
+<Steps>
+  <Step title="Click the Highlight tool">
+    The cursor changes to a crosshair and the settings bar appears. Choose a color and opacity if needed.
+  </Step>
+  <Step title="Drag a rectangle over the text">
+    Hold the left mouse button and drag. A semi-transparent rectangle previews the selection as you drag.
+  </Step>
+  <Step title="Release the mouse button">
+    KillerPDF commits the highlight as a `HighlightAnnotation`. Rectangles smaller than 3×3 pixels are discarded to prevent accidental single-click marks.
+  </Step>
+</Steps>
+
+## How to add a freehand drawing
+
+<Steps>
+  <Step title="Click the Draw tool">
+    The cursor changes to a pen and the settings bar appears. Adjust color, size, and opacity as needed.
+  </Step>
+  <Step title="Draw on the page">
+    Hold the left mouse button and draw. Points are captured continuously as a `Polyline` on the canvas.
+  </Step>
+  <Step title="Release the mouse button">
+    The polyline is committed as an `InkAnnotation`. Strokes with fewer than 3 points are discarded.
+  </Step>
+</Steps>
